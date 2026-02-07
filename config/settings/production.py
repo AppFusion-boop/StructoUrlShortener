@@ -19,9 +19,13 @@ DEBUG = False
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
+# Auto-detect Railway domain if RAILWAY_PUBLIC_DOMAIN is set
+_railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
+_default_origins = f"https://{_railway_domain}" if _railway_domain else ""
+
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
-    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", _default_origins).split(",")
     if origin.strip()
 ]
 
@@ -40,9 +44,12 @@ DATABASES = {
 
 # ---------------------------------------------------------------------------
 # Security
+# Railway (and most PaaS) terminate SSL at the proxy/load-balancer, so the
+# app itself receives plain HTTP.  SECURE_SSL_REDIRECT must be False or the
+# internal health-check will get a 301 and fail.
 # ---------------------------------------------------------------------------
 
-SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "true").lower() == "true"
+SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "false").lower() == "true"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True

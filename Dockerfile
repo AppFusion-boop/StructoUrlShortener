@@ -57,7 +57,7 @@ USER app
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8000}/api/docs')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8000}/health/')" || exit 1
 
 # Default port (Railway uses $PORT)
 EXPOSE 8000

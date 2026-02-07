@@ -1,12 +1,21 @@
 """Root URL configuration for Structo URL Shortener."""
 
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path
 
 from shortener.api import api
 from shortener.views import redirect_to_url
 
+
+def health_check(request):
+    """Lightweight health-check endpoint for Railway / load-balancers."""
+    return JsonResponse({"status": "ok"})
+
+
 urlpatterns = [
+    # Health check — must be before catch-all
+    path("health/", health_check, name="health_check"),
     # Admin
     path("admin/", admin.site.urls),
     # API — django-ninja auto-docs at /api/docs
