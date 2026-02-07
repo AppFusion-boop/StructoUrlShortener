@@ -1,0 +1,22 @@
+# Nixpacks configuration for Railway
+# https://nixpacks.com/docs/configuration/file
+
+[phases.setup]
+nixPkgs = ["python313", "gcc"]
+
+[phases.install]
+cmds = [
+    "curl -LsSf https://astral.sh/uv/install.sh | sh",
+    "export PATH=\"$HOME/.local/bin:$PATH\"",
+    "uv sync --frozen --no-dev",
+]
+
+[phases.build]
+cmds = [
+    "export PATH=\"$HOME/.local/bin:$PATH\"",
+    "export PATH=\".venv/bin:$PATH\"",
+    "SECRET_KEY=build-placeholder python manage.py collectstatic --noinput",
+]
+
+[start]
+cmd = "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --threads 2 --worker-class gthread --worker-tmp-dir /dev/shm"

@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+db.sqlite3
+staticfiles/
+geoip/*.mmdb
+.env
+.env.*
+.git
+.gitignore
+*.md
+.pytest_cache/
+.coverage
+docker-compose*.yml
+.idea/
+.vscode/

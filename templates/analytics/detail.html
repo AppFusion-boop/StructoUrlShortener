@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — {{ url.short_code }}{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <a href="{% url 'shortener:dashboard' %}" class="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back to Dashboard
+        </a>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <span class="font-mono text-brand-400">{{ url.short_code }}</span>
+                    <span class="text-gray-600">Analytics</span>
+                </h1>
+                <p class="text-sm text-gray-400 mt-1 truncate max-w-lg" title="{{ url.original_url }}">
+                    {{ url.original_url }}
+                </p>
+            </div>
+            <button onclick="copyToClipboard('{{ url.short_url }}', this)"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-800 text-gray-300 hover:text-white rounded-xl text-sm font-medium transition-all border border-gray-700/30">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                </svg>
+                Copy Link
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-gray-900/50 rounded-xl border border-gray-800/50 p-5">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Total Clicks</p>
+            <p class="text-3xl font-bold text-white">{{ url.click_count }}</p>
+        </div>
+        <div class="bg-gray-900/50 rounded-xl border border-gray-800/50 p-5">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Unique Visitors</p>
+            <p class="text-3xl font-bold text-white">{{ unique_visitors }}</p>
+        </div>
+        <div class="bg-gray-900/50 rounded-xl border border-gray-800/50 p-5">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Top Country</p>
+            <p class="text-3xl font-bold text-white">
+                {% if top_countries %}{{ top_countries.0.country }}{% else %}—{% endif %}
+            </p>
+        </div>
+        <div class="bg-gray-900/50 rounded-xl border border-gray-800/50 p-5">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Top Browser</p>
+            <p class="text-3gl font-bold text-white truncate">
+                {% if top_browsers %}{{ top_browsers.0.browser }}{% else %}—{% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Clicks Over Time Chart -->
+    <div class="bg-gray-900/50 rounded-2xl border border-gray-800/50 p-6 mb-8">
+        <h2 class="text-lg font-semibold text-white mb-4">Clicks Over Time</h2>
+        {% if clicks_by_day %}
+        <div class="h-72">
+            <canvas id="clicksChart"></canvas>
+        </div>
+        {% else %}
+        <div class="flex items-center justify-center h-48 text-gray-500 text-sm">
+            No click data yet. Share your link to start collecting analytics.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Breakdown Grids -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Browsers -->
+        <div class="bg-gray-900/50 rounded-2xl border border-gray-800/50 p-6">
+            <h2 class="text-lg font-semibold text-white mb-4">Browsers</h2>
+            {% if top_browsers %}
+            <div class="space-y-3">
+                {% for item in top_browsers %}
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-300">{{ item.browser }}</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-24 bg-gray-800 rounded-full h-2">
+                            <div class="bg-brand-500 h-2 rounded-full" style="width: {% widthratio item.count url.click_count 100 %}%"></div>
+                        </div>
+                        <span class="text-sm text-gray-400 w-10 text-right">{{ item.count }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-500">No data yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Operating Systems -->
+        <div class="bg-gray-900/50 rounded-2xl border border-gray-800/50 p-6">
+            <h2 class="text-lg font-semibold text-white mb-4">Operating Systems</h2>
+            {% if top_os %}
+            <div class="space-y-3">
+                {% for item in top_os %}
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-300">{{ item.os }}</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-24 bg-gray-800 rounded-full h-2">
+                            <div class="bg-purple-500 h-2 rounded-full" style="width: {% widthratio item.count url.click_count 100 %}%"></div>
+                        </div>
+                        <span class="text-sm text-gray-400 w-10 text-right">{{ item.count }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-500">No data yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Countries -->
+        <div class="bg-gray-900/50 rounded-2xl border border-gray-800/50 p-6">
+            <h2 class="text-lg font-semibold text-white mb-4">Countries</h2>
+            {% if top_countries %}
+            <div class="space-y-3">
+                {% for item in top_countries %}
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-300">{{ item.country }}</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-24 bg-gray-800 rounded-full h-2">
+                            <div class="bg-emerald-500 h-2 rounded-full" style="width: {% widthratio item.count url.click_count 100 %}%"></div>
+                        </div>
+                        <span class="text-sm text-gray-400 w-10 text-right">{{ item.count }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-500">No data yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Devices -->
+        <div class="bg-gray-900/50 rounded-2xl border border-gray-800/50 p-6">
+            <h2 class="text-lg font-semibold text-white mb-4">Devices</h2>
+            {% if top_devices %}
+            <div class="space-y-3">
+                {% for item in top_devices %}
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-300 capitalize">{{ item.device_type }}</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-24 bg-gray-800 rounded-full h-2">
+                            <div class="bg-amber-500 h-2 rounded-full" style="width: {% widthratio item.count url.click_count 100 %}%"></div>
+                        </div>
+                        <span class="text-sm text-gray-400 w-10 text-right">{{ item.count }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-500">No data yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Referrers -->
+    {% if top_referrers %}
+    <div class="bg-gray-900/50 rounded-2xl border border-gray-800/50 p-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Top Referrers</h2>
+        <div class="space-y-3">
+            {% for item in top_referrers %}
+            <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-300 truncate max-w-md" title="{{ item.referrer }}">{{ item.referrer }}</span>
+                <div class="flex items-center gap-3">
+                    <div class="w-24 bg-gray-800 rounded-full h-2">
+                        <div class="bg-pink-500 h-2 rounded-full" style="width: {% widthratio item.count url.click_count 100 %}%"></div>
+                    </div>
+                    <span class="text-sm text-gray-400 w-10 text-right">{{ item.count }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if clicks_by_day %}
+<script>
+    const ctx = document.getElementById('clicksChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                label: 'Clicks',
+                data: {{ chart_data|safe }},
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#6366f1',
+                pointBorderColor: '#6366f1',
+                pointRadius: 4,
+                pointHoverRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1f2937',
+                    titleColor: '#f3f4f6',
+                    bodyColor: '#d1d5db',
+                    borderColor: '#374151',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    padding: 12,
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                    ticks: { color: '#9ca3af', font: { size: 11 } },
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(75, 85, 99, 0.2)' },
+                    ticks: {
+                        color: '#9ca3af',
+                        font: { size: 11 },
+                        precision: 0,
+                    },
+                }
+            }
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

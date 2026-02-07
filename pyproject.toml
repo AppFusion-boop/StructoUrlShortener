@@ -1,0 +1,62 @@
+[project]
+name = "structourlshortener"
+version = "1.0.0"
+description = "Structo — A modern, production-ready URL shortener built with Django 6, HTMX, and Tailwind CSS."
+requires-python = ">=3.13"
+dependencies = [
+    "dj-database-url>=3.1.0",
+    "django>=6.0.2,<6.1",
+    "django-cors-headers>=4.6.0",
+    "django-htmx>=1.27.0",
+    "django-ninja>=1.5.3",
+    "django-widget-tweaks>=1.5.1",
+    "gunicorn>=25.0.2",
+    "pillow>=11.0.0",
+    "psycopg[binary,pool]>=3.3.2",
+    "qrcode>=8.2",
+    "user-agents>=2.2.0",
+    "whitenoise>=6.11.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-django>=4.9.0",
+    "ruff>=0.9.0",
+]
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.development"
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+# ---------------------------------------------------------------------------
+# Ruff — linting + formatting
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["config", "shortener", "analytics"]

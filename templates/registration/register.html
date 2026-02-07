@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-10rem)] flex items-center justify-center px-4 py-8">
+    <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-white">Create your account</h1>
+            <p class="text-sm text-gray-400 mt-2">Sign up to unlock custom short codes, dashboards, and analytics.</p>
+        </div>
+
+        <div class="bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-gray-800/50 p-8 shadow-2xl shadow-black/20">
+            <form method="post" class="space-y-5">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                <div class="bg-red-900/30 border border-red-700/40 rounded-xl px-4 py-3">
+                    <div class="text-sm text-red-300 space-y-1">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div>
+                    <label for="id_username" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                    {% render_field form.username class="w-full bg-gray-800/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all text-sm" placeholder="Choose a username" %}
+                </div>
+
+                <div>
+                    <label for="id_email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                    {% render_field form.email class="w-full bg-gray-800/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all text-sm" placeholder="you@example.com" %}
+                </div>
+
+                <div>
+                    <label for="id_password1" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                    {% render_field form.password1 class="w-full bg-gray-800/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all text-sm" placeholder="Create a strong password" %}
+                </div>
+
+                <div>
+                    <label for="id_password2" class="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
+                    {% render_field form.password2 class="w-full bg-gray-800/50 border border-gray-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all text-sm" placeholder="Repeat your password" %}
+                </div>
+
+                <button type="submit"
+                        class="w-full py-3 px-4 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-semibold rounded-xl shadow-lg shadow-brand-600/25 hover:shadow-brand-500/40 transition-all text-sm">
+                    Create Account
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-400">
+                    Already have an account?
+                    <a href="{% url 'login' %}" class="text-brand-400 hover:text-brand-300 font-medium">Sign in</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

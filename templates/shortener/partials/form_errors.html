@@ -1,0 +1,23 @@
+<!-- HTMX partial: Form errors -->
+<div class="animate-fadeIn">
+    <div class="bg-red-900/30 border border-red-700/40 rounded-xl px-4 py-3">
+        <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {% if error_message %}
+                <p class="text-sm text-red-300">{{ error_message }}</p>
+            {% elif form.errors %}
+                <div class="text-sm text-red-300">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-sm text-red-300">Something went wrong. Please try again.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
